@@ -1,0 +1,75 @@
+function isFull(grid: Grid): boolean {
+  for (let c = 0; c < COLS; c++) {
+    if (grid[0][c] === 0) return false;
+  }
+  return true;
+}
+
+function chooseMoveAI(grid: Grid, player: number): number {
+  const opponent = player === 1 ? 2 : 1;
+
+  for (let c = 0; c < COLS; c++) {
+    if (!isValidMove(grid, c)) continue;
+    const g2 = cloneGrid(grid);
+    const r = dropToken(g2, c, player);
+    if (r !== -1 && checkWinAt(g2, r, c, player)) return c;
+  }
+  for (let c = 0; c < COLS; c++) {
+    if (!isValidMove(grid, c)) continue;
+    const g2 = cloneGrid(grid);
+    const r = dropToken(g2, c, opponent);
+    if (r !== -1 && checkWinAt(g2, r, c, opponent)) return c;
+  }
+  const validCols: number[] = [];
+  for (let c = 0; c < COLS; c++) if (isValidMove(grid, c)) validCols.push(c);
+  if (validCols.length === 0) return -1;
+  const idx = Math.floor(Math.random() * validCols.length);
+  return validCols[idx];
+}
+
+function simulateGame(seed?: number): void {
+  if (typeof seed === "number") {
+    const s = seed % 100000;
+    let v = s;
+    Math.random = function () {
+      v = (v * 9301 + 49297) % 233280;
+      return v / 233280;
+    } as any;
+  }
+
+  const grid = createGrid();
+  let currentPlayer = 1;
+  let moveCount = 0;
+
+  console.log("Début simulation Puissance 4 (IA vs IA simple)");
+  printGrid(grid);
+
+  while (true) {
+    const col = chooseMoveAI(grid, currentPlayer);
+    if (col === -1) {
+      console.log("Aucune colonne valide trouvée, match nul (improbable).");
+      break;
+    }
+    const row = dropToken(grid, col, currentPlayer);
+    moveCount++;
+    console.log(`Coup ${moveCount} : Joueur ${currentPlayer} joue colonne ${col} (ligne ${row})`);
+    printGrid(grid);
+
+    if (row !== -1 && checkWinAt(grid, row, col, currentPlayer)) {
+      console.log(`Joueur ${currentPlayer} gagne en ${moveCount} coups !`);
+      break;
+    }
+    if (isFull(grid)) {
+      console.log("Grille pleine : match nul.");
+      break;
+    }
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+    // sécurité anti-boucle infinie
+    if (moveCount > ROWS * COLS + 5) {
+      console.log("Arrêt forcé (sécurité).");
+      break;
+    }
+  }
+}
+
+simulateGame();
