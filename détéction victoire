@@ -1,0 +1,30 @@
+function checkWinAt(grid: Grid, r: number, c: number, player: number): boolean {
+  
+  const dirs = [
+    [0, 1],  
+    [1, 0],  
+    [1, 1],  
+    [1, -1], 
+  ];
+  for (let d = 0; d < dirs.length; d++) {
+    const dr = dirs[d][0];
+    const dc = dirs[d][1];
+    let count = 1; 
+    let rr = r + dr;
+    let cc = c + dc;
+    while (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && grid[rr][cc] === player) {
+      count++;
+      rr += dr;
+      cc += dc;
+    }
+    rr = r - dr;
+    cc = c - dc;
+    while (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && grid[rr][cc] === player) {
+      count++;
+      rr -= dr;
+      cc -= dc;
+    }
+    if (count >= 4) return true;
+  }
+  return false;
+}
